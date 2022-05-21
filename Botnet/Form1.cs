@@ -29,6 +29,10 @@ namespace Botnet
 
         bool searching = false;
 
+        /// <summary>
+        /// Trying to avoid some domains like google because it adds unnecessary time to the scan 
+        /// and other tests like SSH testing and Bruteforce
+        /// </summary>
         string[] blacklistedDomains = new string[] { "google", "youtube", "microsoft", "facebook", "gstatic", "w3" };
         #endregion
 
@@ -38,6 +42,12 @@ namespace Botnet
             textbox_search.Focus();
         }
 
+        /// <summary>
+        /// Used to write (append) text into the output TextBox from another Task.
+        /// </summary>
+        /// <param name="text">
+        /// A String that will be appended to the TextBox's Text
+        /// </param>
         public void write(string text)
         {
             if (textbox_log.InvokeRequired)
@@ -50,12 +60,18 @@ namespace Botnet
                 if (textbox_log.Text.Length > 9000) { textbox_log.Clear(); }
                 textbox_log.AppendText(text + Environment.NewLine); 
             } 
-            catch
+            catch (Exception ex)
             { 
-
+                // nothing yet
             }
         }
 
+        /// <summary>
+        /// Used to change the Label Text from another Task
+        /// </summary>
+        /// <param name="text">
+        /// Text that should be displayed as label
+        /// </param>
         public void setStatus(string text)
         {
             if (label_status.InvokeRequired)
@@ -66,6 +82,11 @@ namespace Botnet
             label_status.Text = text;
         }
 
+        /// <summary>
+        /// Adds an IP Address to the IP Address List if its not already listed.
+        /// This is where I plan to add the SSH Check before adding the ip
+        /// </summary>
+        /// <param name="text"></param>
         public void addIp(string text)
         {
             bool found = false;
@@ -95,6 +116,12 @@ namespace Botnet
             }
         }
 
+        /// <summary>
+        /// Used to change the labels in the Statistics GroupBox
+        /// </summary>
+        /// <param name="text">
+        /// Apparently unused lol
+        /// </param>
         public void updateStats(string text = "")
         {
             // 404 error label
@@ -114,10 +141,16 @@ namespace Botnet
             label_scanned.Text = SitesScanned.ToString();            
         }
 
+        /// <summary>
+        /// This is basically making a google search and going through all the listed urls on this page
+        /// and through all the urls linked in the html code
+        /// </summary>
+        /// <param name="url"></param>
         private void searchIndex(string url)
         {
             try
             {
+                // Load and Download Webpage content
                 string pageContent = null;
                 HttpWebRequest myReq = (HttpWebRequest)WebRequest.Create(url);
                 HttpWebResponse myres = (HttpWebResponse)myReq.GetResponse();
@@ -127,34 +160,43 @@ namespace Botnet
                     pageContent = sr.ReadToEnd();
                 }
 
+                // Search for IP Addresses
                 var match = Regex.Match(pageContent, @"\b(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\b");
                 if (match.Success)
                 {
+                    // Add to Output Box
                     write("Found IP: " + match.Captures[0]);
 
+                    // Add IP to IP ListBox
                     addIp(match.Captures[0].ToString());
                 }
 
+                // Search Page Content for other urls and for each url found load its content and redo procedure 
                 foreach (Match item in Regex.Matches(pageContent, @"(http|ftp|https):\/\/([\w\-_]+(?:(?:\.[\w\-_]+)+))([\w\-\.,@?^=%&amp;:/~\+#]*[\w\-\@?^=%&amp;/~\+#])?"))
                 {
+                    // Get Host
                     Uri myUri = new Uri(item.Value);
-                    string host = myUri.Host;
+                    string host = myUri.Host;                    
 
-                    
-
+                    // Check if Host is blacklisted
                     foreach(string s in blacklistedDomains)
                     {
                         if (host.Contains(s))
                         {
-
+                            // Blacklisted
                         }
                         else
                         {
+                            // Add To output
                             write(" ");
                             write("=========[ " + host + " ]=========");
 
                             write("url: " + item.Value);
+
+                            // Search the referred website's content as well
                             scanSites(item.Value);
+
+                            // Update analytics
                             updateStats();
                         }
                     }
@@ -167,12 +209,13 @@ namespace Botnet
                     var resp = (HttpWebResponse)ex.Response;
                     if (resp.StatusCode == HttpStatusCode.NotFound)
                     {
+                        // On 404 Error 
                         write("404 Not Found");
                         NotFoundError++;
                     }
                     else
                     {
-                        // Do something else
+                        // Any other error. Will be added
                     }
                 }
                 else
@@ -182,6 +225,9 @@ namespace Botnet
 
                 write("====================================");
             }
+
+            // Complete End of Search.
+
             updateStats();
 
             write(" ");
@@ -207,19 +253,26 @@ namespace Botnet
             //button1.Enabled = true;
         }
 
+        /// <summary>
+        /// Used to scan sub-sites found on the google search page
+        /// </summary>
+        /// <param name="url">
+        /// website to scan its content.
+        /// </param>
         private void scanSites(string url)
         {
             try
             {
                 SitesScanned++;
 
+                // Get host
                 Uri myUri = new Uri(url);
                 string host = myUri.Host;
 
                 write(" ");
                 write("=========[ " + host + " ]=========");
 
-
+                // Load and get Website content
                 string pageContent = null;
                 HttpWebRequest myReq = (HttpWebRequest)WebRequest.Create(url);
                 HttpWebResponse myres = (HttpWebResponse)myReq.GetResponse();
@@ -229,6 +282,7 @@ namespace Botnet
                     pageContent = sr.ReadToEnd();
                 }
 
+                // Search for ips
                 var match = Regex.Match(pageContent, @"\b(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\b");
                 if (match.Success)
                 {
@@ -236,6 +290,7 @@ namespace Botnet
                     addIp(match.Captures[0].ToString());
                 }
 
+                // Search for other weblinks
                 foreach (Match item in Regex.Matches(pageContent, @"(http|ftp|https):\/\/([\w\-_]+(?:(?:\.[\w\-_]+)+))([\w\-\.,@?^=%&amp;:/~\+#]*[\w\-\@?^=%&amp;/~\+#])?"))
                 {
 
@@ -249,7 +304,7 @@ namespace Botnet
                         {
                             write("url: " + item.Value);
 
-
+                            // Rescan all sub sites again
                             Task.Run(() => scanSubSites(item.Value));
                             updateStats();
                         }
@@ -260,23 +315,23 @@ namespace Botnet
             }
             catch (WebException ex)
             {
-                if (ex.Status == WebExceptionStatus.ProtocolError &&
-        ex.Response != null)
+                if (ex.Status == WebExceptionStatus.ProtocolError && ex.Response != null)
                 {
                     var resp = (HttpWebResponse)ex.Response;
                     if (resp.StatusCode == HttpStatusCode.NotFound)
                     {
+                        // On 404 Error
                         write("404 Not Found");
                         NotFoundError++;
                     }
                     else
                     {
-                        // Do something else
+                        // Implemented soon
                     }
                 }
                 else
                 {
-                    // Do something else
+                    // Implemented soon
                 }
 
                 write("====================================");
@@ -285,6 +340,12 @@ namespace Botnet
             updateStats();
         }
 
+        /// <summary>
+        /// Same as scanSites etc
+        /// </summary>
+        /// <param name="url">
+        /// Site to scan
+        /// </param>
         private void scanSubSites(string url)
         {
             try
@@ -357,9 +418,20 @@ namespace Botnet
             write(" ");
             write(" ");
             write(" ");
+
+            // Starts first scan of google search page
             Task.Run(() => searchIndex("https://www.google.com/search?q=" + textbox_search.Text));
         }
 
+        /// <summary>
+        /// This will be used to check if the host supports SSH. Important for later Bruteforce tests
+        /// </summary>
+        /// <param name="ip">
+        /// IP Address of Target
+        /// </param>
+        /// <returns>
+        /// Returns either true or false. Depends if Host supports SSH or not
+        /// </returns>
         private bool checkSSH(string ip)
         {
             TcpClient tcpClient = new TcpClient();
@@ -377,6 +449,11 @@ namespace Botnet
             }
         }
 
+        /// <summary>
+        /// Some "cosmetics" when it comes to user friendly interface
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void textbox_search_KeyDown(object sender, KeyEventArgs e)
         {
             if(e.KeyCode == Keys.Enter)
