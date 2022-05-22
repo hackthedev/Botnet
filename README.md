@@ -11,3 +11,10 @@ Im trying to simulate a way on how botnets are created. Although the way im doin
 
 ## W.I.P. - Work In  Progress
 Im not fully done with this tool. It may be considered "Aplha" or "Beta" version. Its a mess, not documented or commented yet nor improved. This will change with the following updates.
+
+<br>
+
+## Screenshots - W.I.P. !
+
+![Botnet_GDuZtVz5Hm](https://user-images.githubusercontent.com/40896559/169672786-07007e88-48bd-4734-8d70-0263caebac6e.png)
+![Botnet_yfJzF1uTls](https://user-images.githubusercontent.com/40896559/169672789-745be801-33ce-4bf2-b84b-889611817592.gif)
