@@ -20,7 +20,7 @@ Im trying to simulate a way on how botnets are created. Although the way im doin
 <br>
 
 ## W.I.P. - Work In  Progress
-Im not fully done with this tool. It may be considered "Aplha" or "Beta" version. Its a mess, not documented or commented yet nor improved. This will change with the following updates.
+Im not fully done with this tool. It may be considered "Alpha" or "Beta" version. Its a mess, not documented or commented yet nor improved. This will change with the following updates.
 
 <br>
 
