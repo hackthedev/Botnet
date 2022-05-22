@@ -7,11 +7,15 @@ Im trying to simulate a way on how botnets are created. Although the way im doin
  
 [Discuss and get help on Discord](https://discord.com/invite/KBEZtp2Jtd)
 
+<br>
+
 ## Current features
 - Search Web by Word
 - Get Index of Search Results
 - Find urls and IPs in web content
 - Scan "Sub Sites"
+- Diplay Log
+- Display found IP's
 
 <br>
 
